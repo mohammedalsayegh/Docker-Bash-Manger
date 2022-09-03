@@ -7,6 +7,8 @@
 clear
 
 retval=()
+store=()
+tempFlag=()
 
 function DockerImageNameSelect() {
     STATIONS=()
@@ -169,9 +171,13 @@ function DockerManagerMenu() {
 
             if [[ $retval =~ ['!@#$%^&*()_\+/'] ]]; then
                 #echo yes
-                store=$(echo $retval | tr '<>:\\//#%|?*' ' ')
+                tempFlag=$(echo $retval | tr '<>:\\//#%|?*' ' ')
+                if (whiptail --title "Image Name ⚠️" --yesno "$retval containe characters that Windows doesn't accept in a filename, do you want to change the name of .tar ?" 8 78); then
+                    #save file to $tempFlag 
+                    store=$(echo $retval | tr '<>:\\//#%|?*' ' ')
+                fi
             else
-                echo no
+                echo "no, special characters that Windows would't accept as a filename"
             fi
             
             if (whiptail --title "Export Image" --yesno "Are you sure you want to export $retval ?" 8 78); then
@@ -236,8 +242,24 @@ function DockerManagerMenu() {
             DockerImageNameSelect
             echo \ && read -p "Press key to continue.. " -n1 -s
 
+            if [[ $retval =~ ['!@#$%^&*()_\+/'] ]]; then
+                #echo yes
+                tempFlag=$(docker image ls $retval --format "{{.ID}}")
+                if (whiptail --title "Image Name ⚠️" --yesno "$retval containe characters that ""Docker rm"" required Docker ID, Do you want to delete Docker Image ID $tempFlag?" 8 78); then
+                    store="$tempFlag"
+                fi
+            else
+                echo "There is no special characters in ""Docker rm"" need the ""Docker ID"" "
+            fi
+
+            echo "$store"
+            echo \ && read -p "Press key to continue.. " -n1 -s
+            
+
             if (whiptail --title "Remove Image" --yesno "Are you sure you want to remove $retval ?" 8 78); then
-                time docker image rm "$retval"
+                #time docker image rm "$retval"
+                #time docker image rm f07977d2b0e0
+                time docker image rm "$store"
                 whiptail --title "Remove image" --msgbox "$retval have been removed" 8 45
             else
                 echo "User selected No, exit status was $?."
