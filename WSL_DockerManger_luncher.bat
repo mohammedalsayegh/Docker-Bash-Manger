@@ -1,0 +1,1 @@
+wsl -e ./DockerManger.sh
